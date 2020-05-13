@@ -16,6 +16,8 @@ declare module "rn-apple-healthkit" {
 
         saveFood(options: Object, callback: (error: string, result: Object) => void): void;
 
+        getNutritionSamples(options: Object, callback: (error: string, result: Object) => void): void;
+
         isAvailable(callback: (error: Object, results: boolean) => void): void;
 
         getDateOfBirth(options: any, callback: (error: Object, results: HealthDateOfBirth) => void): void;
