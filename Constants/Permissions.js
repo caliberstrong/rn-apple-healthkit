@@ -3,13 +3,12 @@
  * https://github.com/terrillo/rn-apple-healthkit#permissions
  * @type {Object}
  */
-export const Permissions = {
+
+export default {
   ActiveEnergyBurned: 'ActiveEnergyBurned',
   AppleExerciseTime: 'AppleExerciseTime',
-  BasalBodyTemperature: 'BasalBodyTemperature',
   BasalEnergyBurned: 'BasalEnergyBurned',
   BiologicalSex: 'BiologicalSex',
-  Biotin: 'Biotin',
   BloodGlucose: 'BloodGlucose',
   BloodPressureDiastolic: 'BloodPressureDiastolic',
   BloodPressureSystolic: 'BloodPressureSystolic',
@@ -17,13 +16,14 @@ export const Permissions = {
   BodyMass: 'BodyMass',
   BodyMassIndex: 'BodyMassIndex',
   BodyTemperature: 'BodyTemperature',
+  DateOfBirth: 'DateOfBirth',
+  Biotin: 'Biotin',
   Caffeine: 'Caffeine',
   Calcium: 'Calcium',
   Carbohydrates: 'Carbohydrates',
   Chloride: 'Chloride',
   Cholesterol: 'Cholesterol',
   Copper: 'Copper',
-  DateOfBirth: 'DateOfBirth',
   DistanceCycling: 'DistanceCycling',
   DistanceSwimming: 'DistanceSwimming',
   DistanceWalkingRunning: 'DistanceWalkingRunning',

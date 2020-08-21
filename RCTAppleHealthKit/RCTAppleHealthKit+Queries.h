@@ -91,4 +91,9 @@
                                   limit:(NSUInteger)lim
                              completion:(void (^)(NSArray *, NSError *))completion;
 
+- (void)fetchWorkoutForPredicate: (NSPredicate *)predicate
+           ascending: (BOOL)ascending
+               limit:(NSUInteger)limit
+                      completion:(void (^)(NSArray *, NSError *))completion;
+
 @end
