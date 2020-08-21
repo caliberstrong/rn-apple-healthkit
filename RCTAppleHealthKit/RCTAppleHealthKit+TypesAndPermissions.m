@@ -136,7 +136,7 @@
         @"OvulationTestResult" : [HKObjectType categoryTypeForIdentifier:HKCategoryTypeIdentifierOvulationTestResult],
         @"SexualActivity" : [HKObjectType categoryTypeForIdentifier:HKCategoryTypeIdentifierSexualActivity],
     };
-    return readPerms;
+    return writePerms;
 }
 
 - (nullable HKObjectType *)getReadPermFromText:(nonnull NSString*)key {

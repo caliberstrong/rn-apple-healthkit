@@ -656,60 +656,55 @@
     [self.healthStore executeQuery:query];
 }
 
- - (void)fetchWorkoutForPredicate: (NSPredicate *)predicate
-                       ascending: (BOOL)ascending
-                           limit:(NSUInteger)limit
-                      completion:(void (^)(NSArray *, NSError *))completion {
+  - (void)fetchWorkoutForPredicate: (NSPredicate *)predicate
+                        ascending: (BOOL)ascending
+                            limit:(NSUInteger)limit
+                       completion:(void (^)(NSArray *, NSError *))completion {
 
-    void (^handlerBlock)(HKSampleQuery *query, NSArray *results, NSError *error);
-    NSSortDescriptor *endDateSortDescriptor = [[NSSortDescriptor alloc] initWithKey:HKSampleSortIdentifierEndDate ascending:ascending];
-    handlerBlock = ^(HKSampleQuery *query, NSArray *results, NSError *error) {
-        if(!results) {
-            if(completion) {
-                completion(nil, error);
-            }
-            return;
-        }
+     void (^handlerBlock)(HKSampleQuery *query, NSArray *results, NSError *error);
+     NSSortDescriptor *endDateSortDescriptor = [[NSSortDescriptor alloc] initWithKey:HKSampleSortIdentifierEndDate ascending:ascending];
+     handlerBlock = ^(HKSampleQuery *query, NSArray *results, NSError *error) {
+         if(!results) {
+             if(completion) {
+                 completion(nil, error);
+             }
+             return;
+         }
 
-        if (completion) {
-            NSMutableArray *data = [NSMutableArray arrayWithCapacity:1];
+         if(completion) {
+             NSMutableArray *data = [NSMutableArray arrayWithCapacity:1];
+             NSDictionary *numberToWorkoutNameDictionary = [RCTAppleHealthKit getNumberToWorkoutNameDictionary];
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                for (HKCategorySample *sample in results) {
-                    NSString *endDateString = [RCTAppleHealthKit buildISO8601StringFromDate:sample.endDate];
-                    NSString *startDateString = [RCTAppleHealthKit buildISO8601StringFromDate:sample.startDate];
-                    bool isTracked = [[sample metadata][HKMetadataKeyWasUserEntered] intValue] == 1;
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 for (HKWorkout * sample in results) {
+                     double energy = [[sample totalEnergyBurned] doubleValueForUnit:[HKUnit kilocalorieUnit]];
+                     double distance = [[sample totalDistance] doubleValueForUnit:[HKUnit mileUnit]];
+                     NSNumber *activityNumber =  [NSNumber numberWithInt: [sample workoutActivityType]];
 
-                    NSDictionary *elem = @{
-                                           @"endDate" : endDateString,
-                                           @"sourceId" : [[[sample sourceRevision] source] bundleIdentifier],
-                                           @"sourceName" : [[[sample sourceRevision] source] name],
-                                           @"startDate" : startDateString,
-                                           @"tracked" : @(isTracked),
-                                           @"value" : @(sample.value),
-                                           };
-                    
-                    [data addObject:elem];
-                }
-                
-                completion(data, error);
-            });
-        }
-    };
+                     NSString *activityName = [numberToWorkoutNameDictionary objectForKey: activityNumber];
 
-    HKSampleType *sampleType = [HKCategoryType categoryTypeForIdentifier: HKCategoryTypeIdentifierMenstrualFlow];
+                     if (activityName) {
+                         NSDictionary *elem = @{
+                             @"activityName" : activityName,
+                             @"calories" : @(energy),
+                             @"distance" : @(distance),
+                             @"startDate" : [RCTAppleHealthKit buildISO8601StringFromDate:sample.startDate],
+                             @"endDate" : [RCTAppleHealthKit buildISO8601StringFromDate:sample.endDate]
+                         };
+                         [data addObject:elem];
+                     }
+                 }
+                 completion(data, error);
+             });
 
-    NSSortDescriptor *timeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:HKSampleSortIdentifierEndDate
-                                                                       ascending:asc];
+         }
+     };
 
-    HKSampleQuery *query = [[HKSampleQuery alloc] initWithSampleType:sampleType
-                                                           predicate:predicate
-                                                               limit:limit
-                                                     sortDescriptors:@[timeSortDescriptor]
-                                                      resultsHandler:handlerBlock];
-    
-    [self.healthStore executeQuery:query];
-}
+     HKSampleQuery *query = [[HKSampleQuery alloc] initWithSampleType:[HKObjectType workoutType] predicate:predicate limit:limit sortDescriptors:@[endDateSortDescriptor] resultsHandler:handlerBlock];
+
+     [self.healthStore executeQuery:query];
+
+ }
 
 - (void)fetchOvulationTestResultSamples:(NSPredicate *)predicate
                               ascending:(BOOL)asc
@@ -764,94 +759,5 @@
 
     [self.healthStore executeQuery:query];
 }
-
-- (void)fetchSexualActivitySamples:(NSPredicate *)predicate
-                         ascending:(BOOL)asc
-                             limit:(NSUInteger)limit
-                        completion:(void (^)(NSArray *, NSError *))completion {
-    
-    void (^handlerBlock)(HKSampleQuery *query, NSArray *results, NSError *error)
-    = ^(HKSampleQuery *query, NSArray *results, NSError *error) {
-        if (!results) {
-            if (completion) {
-                completion(nil, error);
-            }
-            return;
-        }
-
-        if (completion) {
-            NSMutableArray *data = [NSMutableArray arrayWithCapacity:1];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                for (HKCategorySample *sample in results) {
-                    NSString *endDateString = [RCTAppleHealthKit buildISO8601StringFromDate:sample.endDate];
-                    NSString *startDateString = [RCTAppleHealthKit buildISO8601StringFromDate:sample.startDate];
-                    bool isTracked = [[sample metadata][HKMetadataKeyWasUserEntered] intValue] == 1;
-                    int protectionUsed = [[sample metadata][HKMetadataKeySexualActivityProtectionUsed] intValue];
-                    
-                    NSDictionary *elem = @{
-                                           @"endDate" : endDateString,
-                                           @"protectionUsed" : @(protectionUsed),
-                                           @"sourceId" : [[[sample sourceRevision] source] bundleIdentifier],
-                                           @"sourceName" : [[[sample sourceRevision] source] name],
-                                           @"startDate" : startDateString,
-                                           @"tracked" : @(isTracked),
-                                           @"value" : @(sample.value),
-                                           };
-
-                    [data addObject:elem];
-                }
-
-                completion(data, error);
-            });
-        }
-    };
-
-    HKSampleType *sampleType = [HKCategoryType categoryTypeForIdentifier: HKCategoryTypeIdentifierSexualActivity];
-
-    NSSortDescriptor *timeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:HKSampleSortIdentifierEndDate
-                                                                       ascending:asc];
-
-    HKSampleQuery *query = [[HKSampleQuery alloc] initWithSampleType:sampleType
-                                                           predicate:predicate
-                                                               limit:limit
-                                                     sortDescriptors:@[timeSortDescriptor]
-                                                      resultsHandler:handlerBlock];
-
-    [self.healthStore executeQuery:query];
-        if(completion) {
-            NSMutableArray *data = [NSMutableArray arrayWithCapacity:1];
-            NSDictionary *numberToWorkoutNameDictionary = [RCTAppleHealthKit getNumberToWorkoutNameDictionary];
-
-            dispatch_async(dispatch_get_main_queue(), ^{
-                for (HKWorkout * sample in results) {
-                    double energy = [[sample totalEnergyBurned] doubleValueForUnit:[HKUnit kilocalorieUnit]];
-                    double distance = [[sample totalDistance] doubleValueForUnit:[HKUnit mileUnit]];
-                    NSNumber *activityNumber =  [NSNumber numberWithInt: [sample workoutActivityType]];
-
-                    NSString *activityName = [numberToWorkoutNameDictionary objectForKey: activityNumber];
-
-                    if (activityName) {
-                        NSDictionary *elem = @{
-                            @"activityName" : activityName,
-                            @"calories" : @(energy),
-                            @"distance" : @(distance),
-                            @"startDate" : [RCTAppleHealthKit buildISO8601StringFromDate:sample.startDate],
-                            @"endDate" : [RCTAppleHealthKit buildISO8601StringFromDate:sample.endDate]
-                        };
-                        [data addObject:elem];
-                    }
-                }
-                completion(data, error);
-            });
-
-        }
-    };
-
-    HKSampleQuery *query = [[HKSampleQuery alloc] initWithSampleType:[HKObjectType workoutType] predicate:predicate limit:limit sortDescriptors:@[endDateSortDescriptor] resultsHandler:handlerBlock];
-
-    [self.healthStore executeQuery:query];
-}
-
 
 @end
