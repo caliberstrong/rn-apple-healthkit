@@ -139,7 +139,7 @@
                         double energy =  [[sample totalEnergyBurned] doubleValueForUnit:[HKUnit kilocalorieUnit]];
                         double distance = [[sample totalDistance] doubleValueForUnit:[HKUnit mileUnit]];
                         NSString *type = [RCTAppleHealthKit stringForHKWorkoutActivityType:[sample workoutActivityType]];
-
+                        double duration = [sample duration];
                         NSString *startDateString = [RCTAppleHealthKit buildISO8601StringFromDate:sample.startDate];
                         NSString *endDateString = [RCTAppleHealthKit buildISO8601StringFromDate:sample.endDate];
 
@@ -166,6 +166,7 @@
                                                @"sourceName" : [[[sample sourceRevision] source] name],
                                                @"sourceId" : [[[sample sourceRevision] source] bundleIdentifier],
                                                @"device": device,
+                                               @"duration": @(duration),
                                                @"distance" : @(distance),
                                                @"start" : startDateString,
                                                @"end" : endDateString
@@ -680,6 +681,7 @@
                      double energy = [[sample totalEnergyBurned] doubleValueForUnit:[HKUnit kilocalorieUnit]];
                      double distance = [[sample totalDistance] doubleValueForUnit:[HKUnit mileUnit]];
                      NSNumber *activityNumber =  [NSNumber numberWithInt: [sample workoutActivityType]];
+                     double duration = [sample duration];
 
                      NSString *activityName = [numberToWorkoutNameDictionary objectForKey: activityNumber];
 
@@ -688,6 +690,7 @@
                              @"activityName" : activityName,
                              @"calories" : @(energy),
                              @"distance" : @(distance),
+                             @"duration" : @(duration),
                              @"startDate" : [RCTAppleHealthKit buildISO8601StringFromDate:sample.startDate],
                              @"endDate" : [RCTAppleHealthKit buildISO8601StringFromDate:sample.endDate]
                          };
